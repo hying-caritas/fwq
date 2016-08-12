@@ -27,7 +27,7 @@ CFLAGS = -DASMx8664 -O1 -fexpensive-optimizations -march=native -mtune=native -m
 LIBS = $(TAU_LIBS)
 LDFLAGS = $(USER_OPT)
 
-all: ftq fwq t_ftq t_fwq
+all: t_fwq
 
 single: ftq fwq
 
