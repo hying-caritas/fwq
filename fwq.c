@@ -16,6 +16,7 @@
  * Licensed under the terms of the GNU Public Licence.  See LICENCE_GPL 
  * for details.
  */
+#define _GNU_SOURCE
 #include "ftq.h"
 
 /* affinity */
@@ -93,12 +94,20 @@ void *fwq_core(void *arg) {
 
 #ifdef _WITH_PTHREADS_
   /* affinity stuff */
-  unsigned long mask = 0x1;
+  cpu_set_t *set;
+  int ret;
+  size_t size;
+  int numthreads = thread_num + 1;
 
-  mask = mask<<thread_num;
-  printf("thread number = %d with affinity mask = %d\n", thread_num, mask);
-  if (pthread_setaffinity_np( pthread_self(), sizeof ( mask ), &mask ) < 0 ) {
-    perror("pthread_setaffinity_np");
+  set = CPU_ALLOC(numthreads);
+  size = CPU_ALLOC_SIZE(numthreads);
+  CPU_ZERO_S(size, set);
+  CPU_SET_S(thread_num, size, set);
+  ret = sched_setaffinity(0, size, set);
+  if (ret < 0) {
+    fprintf(stderr, "failed to set CPU affinity: pid %d, thread: %d, %m\n",
+	    getpid(), thread_num);
+    exit(1);
   }
 #endif
 
@@ -272,7 +281,7 @@ int main(int argc, char **argv) {
 #ifdef _WITH_PTHREADS_
   int rc;
   pthread_t *threads;
-  unsigned long mask = 1;
+  cpu_set_t cpu_set;
 #endif
 
   /* default output name prefix */
@@ -388,7 +397,9 @@ int main(int argc, char **argv) {
 
   if (use_threads == 1) {
 #ifdef _WITH_PTHREADS_
-    if (sched_setaffinity(0, sizeof(mask), &mask) < 0 ) {
+    CPU_ZERO(&cpu_set);
+    CPU_SET(0, &cpu_set);
+    if (sched_setaffinity(0, sizeof(cpu_set), &cpu_set) < 0 ) {
       perror("sched_setaffinity");
     }
     threads = malloc(sizeof(pthread_t)*numthreads);
