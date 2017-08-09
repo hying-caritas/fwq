@@ -18,7 +18,7 @@ CC = gcc
 #--> compatible processor.  If not, write your own!
 #CFLAGS =-I../common -O1 -march=native -mtune=native -m64 -static flags
 #--> for x86-64 using assembly code work (use -w 19 -n 500000)
-CFLAGS = -DASMx8664 -O1 -fexpensive-optimizations -march=native -mtune=native -m64 -malign-double -static
+CFLAGS = -DASMx8664 -O1 -fexpensive-optimizations -m64 -malign-double -static
 #--> flags for x86-64 with vectorization using daxpy work (use -w 14 -n 500000)
 #CFLAGS =  -I../common -DDAXPY -O3 -ffast-math -funroll-loops -fexpensive-optimizations -march=native -mtune=native -msse4.2 -m64 -malign-double -static -ftree-vectorizer-verbose=3
 #--> flags for x86-64 without vectorization using daxpy work (use -w 14 -n 500000)
