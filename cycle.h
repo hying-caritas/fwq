@@ -250,6 +250,21 @@ INLINE_ELAPSED(__inline__)
 #define HAVE_TICK_COUNTER
 #endif
 
+/*
+ * ARM 64 cycle counter
+ */
+#if defined(__GNUC__) && defined(__aarch64__) && !defined(HAVE_TICK_COUNTER)
+typedef unsigned long long ticks;
+
+static inline ticks getticks(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (ts.tv_sec * 1000000000ULL) + ts.tv_nsec;
+}
+
+#define HAVE_TICK_COUNTER
+#endif
+
 /* HP/UX IA64 compiler, courtesy Teresa L. Johnson: */
 #if defined(__hpux) && defined(__ia64) && !defined(HAVE_TICK_COUNTER)
 #include <machine/sys/inline.h>

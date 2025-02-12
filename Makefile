@@ -24,6 +24,10 @@ CFLAGS = -DASMx8664 -O1 -fexpensive-optimizations -m64 -malign-double -static
 #--> flags for x86-64 without vectorization using daxpy work (use -w 14 -n 500000)
 #CFLAGS =  -I../common -DDAXPY -O1 -ffast-math -funroll-loops -fexpensive-optimizations -march=native -mtune=native -msse4.2 -m64 -malign-double -static
 
+ifneq ($(shell uname -m | grep -c 'aarch64'), 0)
+	CFLAGS = -DASMx8664 -O1 -fexpensive-optimizations -static
+endif
+
 LIBS = $(TAU_LIBS)
 LDFLAGS = $(USER_OPT)
 
