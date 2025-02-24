@@ -82,7 +82,8 @@ void *fwq_core(void *arg) {
   void daxpy();
 #endif
 
-  printf("Starting FWQ_CORE with work_length = %d\n", work_length );
+  printf("Starting FWQ_CORE with work_length = %lld, wl = %lld, count = %lld\n",
+    work_length, wl, count);
 #ifdef DAXPY
   /* Intialize FP work */
   da = 1.0e-6;
@@ -118,7 +119,7 @@ void *fwq_core(void *arg) {
   /***************************************************/
   for(done=0; done<1000; done++ ) {
 
-#ifdef ASMx8664
+#ifdef __x86_64__
     /* Core work construct written as loop in gas (GNU Assembler) for
        x86-64 in 64b mode with 16 NOPs in the loop. If your running in
        on x86 compatible hardware in 32b mode change "incq" to "incl"
@@ -165,6 +166,35 @@ void *fwq_core(void *arg) {
       for(count = wl; count<0; count++) {
 	daxpy( VECLEN, da, dx, 1, dy, 1 );
       }
+#elif defined(__aarch64__)
+    /* Core work loop in gas */
+    count = wl;
+    tick = getticks();
+    __asm__ __volatile__(
+        "myL1:\n\t"
+        "add %0, %0, #1\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "cmp %1, #0\n\t"
+        "b.ne myL1"
+        : "=r"(count)          /* output */
+        : "0"(count), "r"(count)  /* input */
+        : "cc", "memory"       /* clobbered registers */
+    );
 #else
     /* This is the default work construct. Be very careful with this
       as it is most important that "count" variable be in a register
@@ -203,7 +233,7 @@ void *fwq_core(void *arg) {
 
   for(done=0; done<numsamples; done++ ) {
 
-#ifdef ASMx8664
+#ifdef __x86_64__
     /* Core work loop in gas */
     count = wl;
     tick = getticks();
@@ -237,6 +267,35 @@ void *fwq_core(void *arg) {
       for(count = wl; count<0; count++) {
 	daxpy( VECLEN, da, dx, 1, dy, 1 );
       }
+#elif defined(__aarch64__)
+    /* Core work loop in gas */
+    count = wl;
+    tick = getticks();
+    __asm__ __volatile__(
+        "myL2:\n\t"
+        "add %0, %0, #1\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "cmp %1, #0\n\t"
+        "b.ne myL2"
+        : "=r"(count)          /* output */
+        : "0"(count), "r"(count)  /* input */
+        : "cc", "memory"       /* clobbered registers */
+    );
 #else
       /* Default core work loop */
       count = wl;
