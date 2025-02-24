@@ -342,6 +342,8 @@ int main(int argc, char **argv) {
   pthread_t *threads;
   cpu_set_t cpu_set;
 #endif
+  unsigned long long max_num = 1, max_time = 0, offset_num = 0;
+  double avg_time = 0;
 
   /* default output name prefix */
   sprintf(outname,"fwq");
@@ -516,6 +518,13 @@ int main(int argc, char **argv) {
     }
   }
 
+  max_num = numthreads * numsamples;
+  for(offset_num=0; offset_num<max_num; offset_num++ ) {
+    max_time += samples[offset_num];
+  }
+  avg_time = max_time/max_num;
+  printf("Total time for %d threads(%ld tasks/thread): %llu(ns)\nAverage time per thread per task:%.0f(ns)\n",
+         numthreads, numsamples, max_time, avg_time);
   free(samples);
 
 #ifdef _WITH_PTHREADS_
